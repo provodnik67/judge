@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/provodnik67/judge/database"
-
 	"github.com/joho/godotenv"
+	"github.com/provodnik67/judge/api"
+	"github.com/provodnik67/judge/database"
 )
 
 func main() {
@@ -18,17 +18,27 @@ func main() {
 	fmt.Println(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	db := database.InitDB()
 	defer db.Close()
-	judge := database.Judge{
-		Name:        "Строгий Формалист",
-		Worldview:   "Законник",
-		Personality: "Ты строго следуешь букве закона...",
-		Backstory:   "Бывший прокурор...",
-		IsActive:    true,
+	// judge := database.Judge{
+	// 	Name:        "Строгий Формалист",
+	// 	Worldview:   "Законник",
+	// 	Personality: "Ты строго следуешь букве закона...",
+	// 	Backstory:   "Бывший прокурор...",
+	// 	IsActive:    true,
+	// }
+
+	// id, err := database.CreateJudge(db, judge)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.Printf("ID: %d", id)
+	response, err := api.AskDeepSeek(
+		"Кому на Руси жить хорошо?",
+		"соевый российский эмигрант",
+	)
+	if err != nil {
+		log.Fatal("DeepSeek error:", err)
 	}
 
-	id, err := database.CreateJudge(db, judge)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("ID: %d", id)
+	log.Println("DeepSeek ответил:", response)
+
 }
