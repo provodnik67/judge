@@ -31,14 +31,29 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// log.Printf("ID: %d", id)
-	response, err := api.AskDeepSeek(
-		"Кому на Руси жить хорошо?",
+	judges := []string{
 		"соевый российский эмигрант",
-	)
-	if err != nil {
-		log.Fatal("DeepSeek error:", err)
+		"ватник новиоп",
+	}
+	results := make(chan string, len(judges))
+	for _, name := range judges {
+
+		go func(name string) {
+			response, err := api.AskDeepSeek("Кому на Руси жить хорошо? Только ответь кратко. Уложись в 5 предложений.", name)
+			if err != nil {
+				results <- fmt.Sprintf("❌ %s: %v", name, err)
+			} else {
+				results <- fmt.Sprintf("✅ %s: %s", name, response)
+			}
+		}(name)
+	}
+	var responses []string
+	for i := 0; i < len(judges); i++ {
+		responses = append(responses, <-results) // собираем результаты
 	}
 
-	log.Println("DeepSeek ответил:", response)
+	for _, response := range responses {
+		log.Println("DeepSeek ответил:", response)
+	}
 
 }
