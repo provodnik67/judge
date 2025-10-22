@@ -18,34 +18,21 @@ func main() {
 	fmt.Println(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	db := database.InitDB()
 	defer db.Close()
-	// judge := database.Judge{
-	// 	Name:        "Строгий Формалист",
-	// 	Worldview:   "Законник",
-	// 	Personality: "Ты строго следуешь букве закона...",
-	// 	Backstory:   "Бывший прокурор...",
-	// 	IsActive:    true,
-	// }
-
-	// id, err := database.CreateJudge(db, judge)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Printf("ID: %d", id)
-	judges := []string{
-		"соевый российский эмигрант",
-		"ватник новиоп",
+	judges, err := database.GetAllJudges(db)
+	if err != nil {
+		log.Fatal(err)
 	}
 	results := make(chan string, len(judges))
-	for _, name := range judges {
+	for _, judge := range judges {
 
-		go func(name string) {
-			response, err := api.AskDeepSeek("Кому на Руси жить хорошо? Только ответь кратко. Уложись в 5 предложений.", name)
+		go func(judge database.Judge) {
+			response, err := api.AskDeepSeek("Кому на Руси жить хорошо? Только ответь кратко. Уложись в 5 предложений.", fmt.Sprintf("Судья %s, мировоззрение: %s, как я действую: %s, история: %s", judge.Name, judge.Worldview, judge.Personality, judge.Backstory))
 			if err != nil {
-				results <- fmt.Sprintf("❌ %s: %v", name, err)
+				results <- fmt.Sprintf("❌ %s: %v", judge.Name, err)
 			} else {
-				results <- fmt.Sprintf("✅ %s: %s", name, response)
+				results <- fmt.Sprintf("✅ %s: %s", judge.Name, response)
 			}
-		}(name)
+		}(judge)
 	}
 	var responses []string
 	for i := 0; i < len(judges); i++ {
