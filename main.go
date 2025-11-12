@@ -43,6 +43,9 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
+		if update.Message.Text == "/history" {
+			// @todo реализуем хранение истории чата для анализа судебных решений
+		}
 		if strings.HasSuffix(update.Message.Text, "?") {
 			results := make(chan string, len(judges))
 			for _, judge := range judges {
