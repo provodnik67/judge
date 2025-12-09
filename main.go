@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
@@ -43,8 +44,16 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		if update.Message.Text == "/history" {
-			// @todo реализуем хранение истории чата для анализа судебных решений
+		message := database.Message{
+			ChatId:    update.Message.Chat.ID,
+			UserId:    int64(update.Message.From.ID),
+			UserName:  update.Message.From.FirstName + " " + update.Message.From.LastName,
+			Message:   update.Message.Text,
+			CreatedAt: time.Now(),
+		}
+		_, err := database.CreateMessage(db, message)
+		if err != nil {
+			log.Panic(err)
 		}
 		if strings.HasSuffix(update.Message.Text, "?") {
 			results := make(chan string, len(judges))
